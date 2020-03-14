@@ -59,7 +59,7 @@ def on_chat_message(msg):
 
   elif state_cache[telegram_name] == "certificabot.motivation":
     data_cache[telegram_name].motivation = msg['text']
-    bot.sendMessage(chat_id, "Scrivi:\n1: se per comprovate esigenze lavorative;\n2: se per situazioni di necessità;\n3: motivi di salute;\n4: se per rientro presso il proprio domicilio, abitazione o residenza")
+    bot.sendMessage(chat_id, "Scrivi \"1\" se per comprovate esigenze lavorative;\nScrivi \"2\" se per situazioni di necessità;\nScrivi \"3\" motivi di salute;\nScrivi \"4\" se per rientro presso il proprio domicilio, abitazione o residenza")
     state_cache[telegram_name] = "certificabot.reason"
 
   elif state_cache[telegram_name] == "certificabot.reason":
