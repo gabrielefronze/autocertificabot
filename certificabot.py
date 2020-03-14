@@ -9,6 +9,8 @@ TOKEN = ''
 
 bot = telepot.Bot(TOKEN)
 
+counter = 0
+
 def main():
     bot.message_loop(on_chat_message)
 
@@ -70,7 +72,8 @@ def on_chat_message(msg):
     print(index)
     data_cache[telegram_name].reason = index
     bot.sendMessage(chat_id, "Dammi un attimo...")
-    print(data_cache[telegram_name].showPerson())
+    global counter
+    counter += 1
     bot.sendMessage(chat_id, "Ecco i dati che hai inserito:\n{}".format(data_cache[telegram_name].showPerson()))
 
     filename = "Autocertificazione_{}".format(data_cache[telegram_name].name)
