@@ -1,108 +1,99 @@
 #! /usr/bin/env python3
+# -*- coding: utf8 -*-
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
-from fpdf import FPDF
-
-class birth:
-  def __init__(self, date, city):
-    self.date = date
-    self.city = city
-
-  def printBirth(self):
-    return "Nato a {} il {}".format(self.city, self.date)
-
-doc_kinds = {"id" : 1, "passport" : 2, "drivinglic" : 3}
-
-class document:
-  def __init__(self, kind , number):
-    self.kind = kind
-    self.number = number
-
-  def printDocument(self):
-    return "Identificato a mezzo {}, numero {}".format(self.kind, self.number)
-
-class address:
-  def __init__(self, city, road, number):
-    self.city = city
-    self.road = road
-    self.number = number
-
-  def printAddress(self):
-    return "Residente a {}, {} {}".format(self.city, self.road, self.number)
-
-class person:
-  def __init__(self, first_name, family_name, birth, address, document, phone):
-    self.first_name = first_name
-    self.family_name = family_name
-    self.birth = birth
-    self.address = address
-    self.document = document
-    self.phone = phone
-
-  def printPerson(self):
-    return ("Il sottoscritto {} {}.\n{}.\n{}.\n{}.\nUtenza telefonica {}.\nconsapevole delle conseguenze penali previste in caso di dichiarazioni mendaci a pubblico ufficiale (art 495 c.p.)".format(self.family_name.capitalize(),
-                                                                                                                                                                                          self.first_name,
-                                                                                                                                                                                          self.address.printAddress(),
-                                                                                                                                                                                          self.birth.printBirth(),
-                                                                                                                                                                                          self.document.printDocument(),
-                                                                                                                                                                                          self.phone))
-
-
-def printNotice():
-  return "DICHIARA SOTTO LA PROPRIA RESPONSABILITÀ\nDi essere a conoscenza delle misure di contenimento del contagio di cui all’art. 1, comma 1, del Decreto del Presidente del Consiglio dei Ministri del 9 marzo 2020 concernenti lo spostamento delle persone fisiche all’interno di tutto il territorio nazionale, nonché delle sanzioni previste dall’art. 4, comma 1, del Decreto del Presidente del Consiglio dei Ministri dell’ 8 marzo 2020 in caso di inottemperanza (art. 650 C.P. salvo che il fatto non costituisca più grave reato)\nChe lo spostamento è determinato da "
-
-reasons = ["comprovate esigenze lavorative.","situazioni di necessità.","motivi di salute.","rientro presso il proprio domicilio, abitazione o residenza."]
-
-def printReason(index):
-  return reasons[index]
-
-
-def printMotivation(motivation):
-  return "\n\nA questo riguardo, dichiara che:\n"+motivation
-
-def printFooter():
-  return "\n\n\nData, ora e luogo del controllo\n\n\nFirma del dichiarante\n\n\nL’Operatore di Polizia\n\n\n"
-
-def printAll(person, reason = 0, motivation = "Devo cambiare l'acqua ai delfini dell'acquario di Genova."):
-    return testPerson.printPerson()+"\n\n"+printNotice()+printReason(reason)+printMotivation(motivation)+printFooter()
+from utils import *
+from chatbot import on_chat_message
+import os
     
+TOKEN = ''
+
+bot = telepot.Bot(TOKEN)
+
 def main():
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
-    updater = Updater("", use_context=True)
+    bot.message_loop(on_chat_message)
 
-    # Get the dispatcher to register handlers
-    dp = updater.dispatcher
+    print('Listening ...')
 
-    # on noncommand i.e message - echo the message on Telegram
-    # dp.add_handler(MessageHandler(Filters.text, echo))
+    import time
+    while 1:
+        time.sleep(10)
 
-    # log all errors
-    dp.add_error_handler(error)
+data_cache = dict()
+state_cache = dict()
 
-    # Start the Bot
-    updater.start_polling()
+def on_chat_message(msg):
+  content_type, chat_type, chat_id = telepot.glance(msg)
+  telegram_name = msg["from"]["first_name"]
 
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
+  if telegram_name not in state_cache or state_cache[telegram_name] == "certificabot.start" or state_cache[telegram_name] == None:
+    bot.sendMessage(chat_id, "Benvenuto!\nI tuoi dati non verranno salvati e saranno cancellati appena riceverai l'autodichiarazione.\nDevo farti qualche domanda:\n")
+    bot.sendMessage(chat_id, "Come ti chiami (Nome e Cognome)?")
+    state_cache[telegram_name] = "certificabot.name"
+    data_cache[telegram_name] = person()
+
+  elif state_cache[telegram_name] == "certificabot.name":
+    data_cache[telegram_name].name = msg['text']
+    bot.sendMessage(chat_id, "Dove e quando sei nato (Data e Luogo)?")
+    state_cache[telegram_name] = "certificabot.birth"
+
+  elif state_cache[telegram_name] == "certificabot.birth":
+    data_cache[telegram_name].birth = msg['text']
+    bot.sendMessage(chat_id, "Dove risiedi (indirizzo completo)?")
+    state_cache[telegram_name] = "certificabot.address"
+
+  elif state_cache[telegram_name] == "certificabot.address":
+    data_cache[telegram_name].address = msg['text']
+    bot.sendMessage(chat_id, "Qual è il tuo numero di telefono?")
+    state_cache[telegram_name] = "certificabot.phone"
+
+  elif state_cache[telegram_name] == "certificabot.phone":
+    data_cache[telegram_name].phone = msg['text']
+    bot.sendMessage(chat_id, "Qual è il numero della tua carta d'identita?")
+    state_cache[telegram_name] = "certificabot.document"
+
+  elif state_cache[telegram_name] == "certificabot.document":
+    data_cache[telegram_name].document = "Carta d'Indentità n."+str(msg['text'])
+    bot.sendMessage(chat_id, "Per quale motivo devi uscire?")
+    state_cache[telegram_name] = "certificabot.motivation"
+
+  elif state_cache[telegram_name] == "certificabot.motivation":
+    data_cache[telegram_name].motivation = msg['text']
+    bot.sendMessage(chat_id, "Scrivi:\n1: se per comprovate esigenze lavorative;\n2: se per situazioni di necessità;\n3: motivi di salute;\n4: se per rientro presso il proprio domicilio, abitazione o residenza")
+    state_cache[telegram_name] = "certificabot.reason"
+
+  elif state_cache[telegram_name] == "certificabot.reason":
+    index =  int(msg['text'])-1
+    # if index >= 0 and index < len(reasons):
+    #   bot.sendMessage(chat_id, "Opzione sbagliata!\nScrivi:\n1: se per comprovate esigenze lavorative;\n2: se per situazioni di necessità;\n3: motivi di salute;\n4: se per rientro presso il proprio domicilio, abitazione o residenza")
+    #   state_cache[telegram_name] = "certificabot.motivation"
+    #   return
+    print(index)
+    data_cache[telegram_name].reason = index
+    bot.sendMessage(chat_id, "Dammi un attimo...")
+    print(data_cache[telegram_name].showPerson())
+    bot.sendMessage(chat_id, "Ecco i dati che hai inserito:\n{}".format(data_cache[telegram_name].showPerson()))
+
+    filename = "Autocertificazione_{}".format(data_cache[telegram_name].name)
+    mdFile = mdutils.MdUtils(file_name=filename)
+    data_cache[telegram_name].printPerson(mdFile)
+    printNotice(mdFile)
+    printReason(data_cache[telegram_name].reason,mdFile)
+    printMotivation(data_cache[telegram_name].motivation, mdFile)
+    printFooter(mdFile)
+    mdFile.create_md_file()
+
+    markdown2pdf3.convert_markdown_to_pdf("./{}.md".format(filename))
+
+    bot.sendDocument(chat_id, open("./{}.pdf".format(filename),"rb") ,caption="Ecco qui la tua autocertificazione! Sii prudente!")
+
+    os.remove("./{}.md".format(filename))
+    os.remove("./{}.pdf".format(filename))
+
+    state_cache[telegram_name] = None
+    data_cache[telegram_name] = None
+
+    state_cache[telegram_name] = "certificabot.start"
 
 
 if __name__ == '__main__':
-    testBirth = birth("08/10/1991", "Savigliano")
-    testName = ["Gabriele", "Fronzé"]
-    testDocument = document("Carta d'identità", "AO000000")
-    testAddress = address("Cuneo", "Via Roma", "17")
-
-    testPerson = person(testName[1], testName[0], testBirth, testAddress, testDocument, "0000000000")
-
-    print(printAll(testPerson))
-
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, printAll(testPerson), ln=1, align="C")
-    pdf.output("simple_demo.pdf")
+  main()
