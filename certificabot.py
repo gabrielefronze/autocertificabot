@@ -2,7 +2,6 @@
 # -*- coding: utf8 -*-
 
 from utils import *
-from chatbot import on_chat_message
 import os
     
 TOKEN = ''
