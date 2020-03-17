@@ -32,7 +32,9 @@ def printNotice(mdfile):
   mdfile.new_line("")
   mdfile.new_line("")
   mdfile.new_header(level=4, title="**DICHIARA SOTTO LA PROPRIA RESPONSABILITÀ**")
-  mdfile.new_paragraph("* Di essere a conoscenza delle misure di contenimento del contagio di cui all’art. 1, comma 1, del Decreto del Presidente del Consiglio dei Ministri del 9 marzo 2020 concernenti lo spostamento delle persone fisiche all’interno di tutto il territorio nazionale, nonché delle sanzioni previste dall’art. 4, comma 1, del Decreto del Presidente del Consiglio dei Ministri dell’ 8 marzo 2020 in caso di inottemperanza (art. 650 C.P. salvo che il fatto non costituisca più grave reato")
+  mdfile.new_paragraph("* Di essere a **conoscenza delle misure di contenimento del contagio** di cui al combinato disposto dell'**art. 1 del Decreto del _Presidente del Consiglio dei Ministri_ 8 marzo 2020 e dell'art. 1, comma 1, del Decreto del _Presidente del Consiglio dei Ministri_ del 9 marzo 2020** concernenti **lo spostamento delle persone fisiche all'interno di tutto il territorio nazionale**;")
+  mdfile.new_paragraph("* **Di non essere sottoposto alla misura della quarantena** e di non essere risultato positivo al virus COVID-19 di cui all'**articolo 1, comma 1, lettera c), del Decreto del _Presidente del Consiglio dei Ministri_ dell' 8 marzo 2020**;")
+  mdfile.new_paragraph("* **Di essere a conoscenza delle sanzioni previste, dal combinato disposto dell'art. 3, comma 4, del D.L. 23 febbraio 2020, n. 6 e dell'art. 4, comma 1**, del Decreto del _Presidente del Consiglio dei Ministri_ dell' 8 marzo 2020 **in caso di inottemperanza delle predette misure di contenimento** (art. 650 c.p. salvo che il fatto non costituisca più grave reato);")
 
 def printReason(index, mdfile):
   mdfile.new_line("* Che lo spostamento è determinato da: **{}**".format(reasons[index]))
@@ -41,7 +43,7 @@ def printReason(index, mdfile):
 def printMotivation(motivation, mdfile):
   mdfile.new_line("")
   mdfile.new_line("")
-  mdfile.new_line("A questo riguardo, dichiara che:")
+  mdfile.new_header(level=4, title="A questo riguardo, dichiara che:")
   mdfile.new_line("**{}**".format(motivation))
 
 def printFooter(mdfile):
